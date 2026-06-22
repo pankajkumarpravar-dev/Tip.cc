@@ -4,11 +4,17 @@ import os
 from datetime import datetime, timedelta
 import logging
 import json
+from pathlib import Path
 
 logger = logging.getLogger('Tippy')
 
 class DatabaseManager:
-    def __init__(self, db_path: str = "tippy.db"):
+    def __init__(self, db_path: str = None):
+        if db_path is None:
+            # Use data directory or current directory
+            data_dir = Path('data')
+            data_dir.mkdir(exist_ok=True)
+            db_path = str(data_dir / 'tippy.db')
         self.db_path = db_path
         self.connection = None
 
@@ -18,7 +24,7 @@ class DatabaseManager:
             self.connection = await aiosqlite.connect(self.db_path)
             await self.connection.execute("PRAGMA foreign_keys = ON")
             await self.create_tables()
-            logger.info("✅ Database initialized successfully")
+            logger.info(f"✅ Database initialized: {self.db_path}")
         except Exception as e:
             logger.error(f"❌ Database initialization failed: {e}")
             raise
@@ -130,8 +136,13 @@ class DatabaseManager:
         ]
         
         for table in tables:
-            await self.connection.execute(table)
+            try:
+                await self.connection.execute(table)
+            except Exception as e:
+                logger.warning(f"Table creation note: {e}")
+        
         await self.connection.commit()
+        logger.info("✅ All database tables ready")
 
     async def get_or_create_user(self, user_id: int, username: str):
         """Get or create a user"""
@@ -288,7 +299,7 @@ class DatabaseManager:
     async def create_airdrop(self, creator_id: int, coin: str, amount_per_winner: float, total_amount: float, winners_count: int, guild_id: int, channel_id: int, expires_at: datetime):
         """Create airdrop"""
         async with self.connection.execute(
-            "INSERT INTO airdrops (creator_id, coin, amount_per_winner, total_amount, winners_count, guild_id, channel_id, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ",
+            "INSERT INTO airdrops (creator_id, coin, amount_per_winner, total_amount, winners_count, guild_id, channel_id, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
             (creator_id, coin, amount_per_winner, total_amount, winners_count, guild_id, channel_id, expires_at)
         ) as cursor:
             pass

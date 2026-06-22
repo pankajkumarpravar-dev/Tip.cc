@@ -7,3 +7,4 @@ sqlalchemy==2.0.23
 requests==2.31.0
 Pillow==10.1.0
 pytz==2023.3
+uwsgidecorators==1.1.0
