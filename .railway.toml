@@ -1,0 +1,8 @@
+# Add these to your .env file on Railway:
+# DISCORD_TOKEN=your_token
+# ADMIN_IDS=your_id
+# LTC_EMOJI=<:stolen_emoji_blaze:1517930529637400698>
+# DATABASE_URL=sqlite:///data/tippy.db
+
+# Railway specific settings
+export PORT=8000
